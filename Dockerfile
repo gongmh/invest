@@ -3,7 +3,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production=false
+RUN npm install
 
 COPY src ./src
 COPY index.html ./
@@ -16,7 +16,7 @@ FROM node:18-alpine
 WORKDIR /app/server
 
 COPY server/package*.json ./
-RUN npm ci --only=production
+RUN npm install --production
 
 COPY server .
 
