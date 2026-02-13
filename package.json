@@ -1,0 +1,25 @@
+{
+  "name": "a-stock-analyzer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A股股票分析工具 - 支持AI智能分析、技术指标计算、自选股管理",
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "cd server && npm start",
+    "deploy": "npm run build && cd server && npm start"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "axios": "^1.7.9",
+    "echarts": "^5.5.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.5"
+  }
+}
