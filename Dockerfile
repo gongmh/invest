@@ -13,18 +13,22 @@ RUN npm run build
 
 FROM node:18-alpine
 
-WORKDIR /app/server
+WORKDIR /app
 
-COPY server/package*.json ./
-RUN npm install --production
+COPY server/package*.json ./server/
+RUN cd server && npm install --production
 
-COPY server .
+COPY server ./server
 
-RUN mkdir -p data && echo '[]' > data/favorites.json
+RUN mkdir -p /app/server/data && echo '[]' > /app/server/data/favorites.json
+
+COPY --from=builder /app/dist ./dist
 
 ENV PORT=3001
 ENV NODE_ENV=production
 
 EXPOSE 3001
+
+WORKDIR /app/server
 
 CMD ["node", "index.js"]
