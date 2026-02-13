@@ -27,6 +27,9 @@
           @dragover.prevent="handleDragOver($event, index)"
           @dragend="handleDragEnd"
           @drop="handleDrop($event, index)"
+          @touchstart="handleTouchStart($event, index)"
+          @touchmove="handleTouchMove($event)"
+          @touchend="handleTouchEnd"
         >
           <button 
             class="stock-btn"
@@ -528,6 +531,66 @@ export default {
       dragIndex.value = null
     }
     
+    let touchStartY = 0
+    let touchStartIndex = null
+    let touchCurrentIndex = null
+    
+    const handleTouchStart = (e, index) => {
+      touchStartY = e.touches[0].clientY
+      touchStartIndex = index
+      touchCurrentIndex = index
+      dragIndex.value = index
+    }
+    
+    const handleTouchMove = (e) => {
+      if (touchStartIndex === null) return
+      
+      const touch = e.touches[0]
+      const items = document.querySelectorAll('.stock-item')
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const rect = item.getBoundingClientRect()
+        
+        if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          if (touchCurrentIndex !== i) {
+            touchCurrentIndex = i
+            dragIndex.value = i
+            
+            const stocks = [...favoriteStocks.value]
+            const startIndex = touchStartIndex
+            const endIndex = i
+            
+            if (startIndex !== endIndex) {
+              const [removed] = stocks.splice(startIndex, 1)
+              stocks.splice(endIndex, 0, removed)
+              favoriteStocks.value = stocks
+              touchStartIndex = endIndex
+            }
+          }
+          break
+        }
+      }
+    }
+    
+    const handleTouchEnd = async () => {
+      if (touchStartIndex === null) return
+      
+      try {
+        const codes = favoriteStocks.value.map(s => s.code)
+        await favoriteApi.reorderFavorites(codes)
+        toastRef.value?.show('排序成功', 2000, 'success')
+      } catch (err) {
+        console.error('排序失败:', err)
+        toastRef.value?.show('排序失败，请稍后重试', 3000, 'error')
+        loadFavoriteStocks()
+      }
+      
+      touchStartIndex = null
+      touchCurrentIndex = null
+      dragIndex.value = null
+    }
+    
     const periods = [
       { label: '近1周', value: 7 },
       { label: '近1月', value: 30 },
@@ -910,6 +973,9 @@ export default {
       handleDragOver,
       handleDrop,
       handleDragEnd,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
       showConfirm,
       confirmMessage,
       handleConfirmDelete,
