@@ -1,5 +1,4 @@
 node_modules
-dist
 .git
 .gitignore
 *.md
@@ -8,3 +7,6 @@ server/.env
 server/data
 *.log
 .DS_Store
+build.sh
+start.sh
+ecosystem.config.js

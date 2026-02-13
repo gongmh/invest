@@ -3,7 +3,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci --only=production=false
 
 COPY src ./src
 COPY index.html ./
@@ -13,15 +13,14 @@ RUN npm run build
 
 FROM node:18-alpine
 
-WORKDIR /app
-
-COPY server ./server
 WORKDIR /app/server
 
-RUN npm install
+COPY server/package*.json ./
+RUN npm ci --only=production
 
-RUN mkdir -p /app/server/data && \
-    echo '[]' > /app/server/data/favorites.json
+COPY server .
+
+RUN mkdir -p data && echo '[]' > data/favorites.json
 
 ENV PORT=3001
 ENV NODE_ENV=production
