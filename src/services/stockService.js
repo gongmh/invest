@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 const STOCK_API_BASE = 'https://web.sqt.gtimg.cn/q='
+const API_BASE = import.meta.env.BASE_URL + 'api'
 
 export const stockService = {
   async getStockInfo(code) {
@@ -22,7 +23,7 @@ export const stockService = {
     try {
       const marketCode = this.getMarketCode(code)
       
-      const response = await axios.get('/api/stock/kline', {
+      const response = await axios.get(`${API_BASE}/stock/kline`, {
         params: {
           symbol: marketCode,
           days: days
