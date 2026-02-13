@@ -923,6 +923,7 @@ button:hover {
   
   .info-card {
     padding: 10px;
+    min-width: 0;
   }
   
   .info-card-label {
@@ -932,6 +933,7 @@ button:hover {
   
   .info-card-value {
     font-size: 15px;
+    word-break: break-all;
   }
   
   .chart-container {
@@ -1037,6 +1039,7 @@ button:hover {
   
   .indicator-item {
     padding: 12px 10px;
+    min-width: 0;
   }
   
   .indicator-label {
@@ -1045,6 +1048,7 @@ button:hover {
   
   .indicator-value {
     font-size: 16px;
+    word-break: break-all;
   }
   
   .indicator-desc {
@@ -1248,6 +1252,7 @@ button:hover {
   
   .info-card {
     padding: 8px;
+    min-width: 0;
   }
   
   .info-card-label {
@@ -1255,7 +1260,8 @@ button:hover {
   }
   
   .info-card-value {
-    font-size: 14px;
+    font-size: 13px;
+    word-break: break-all;
   }
   
   .period-btn {
@@ -1270,9 +1276,11 @@ button:hover {
   
   .indicator-item {
     padding: 10px 8px;
+    min-width: 0;
   }
   
   .indicator-value {
     font-size: 15px;
+    word-break: break-all;
   }
 }
