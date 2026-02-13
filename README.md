@@ -54,49 +54,49 @@ invest/
 
 ### 环境要求
 
-- Node.js >= 16.0.0
-- npm >= 8.0.0
+- Docker（推荐）
+- 或 Node.js >= 16.0.0（开发模式）
 
-### 安装依赖
+### Docker 部署（推荐）
 
 ```bash
-# 安装前端依赖
+# 1. 克隆项目
+git clone https://github.com/gongmh/invest.git
+cd invest
+
+# 2. 创建环境变量文件（可选）
+cat > .env << EOF
+DEEPSEEK_API_KEY=your_api_key_here
+EOF
+
+# 3. 启动服务
+docker-compose up -d
+
+# 4. 查看日志
+docker-compose logs -f
+```
+
+访问 http://localhost:3001 即可使用。
+
+### 开发模式
+
+```bash
+# 安装依赖
 npm install
+cd server && npm install && cd ..
 
-# 安装后端依赖
-cd server && npm install
-```
+# 配置环境变量
+cp server/.env.example server/.env
+# 编辑 server/.env 填入 DEEPSEEK_API_KEY
 
-### 配置环境变量
-
-在 `server/` 目录下创建 `.env` 文件：
-
-```env
-DEEPSEEK_API_KEY=your_deepseek_api_key
-PORT=3001
-```
-
-> 如果不配置 `DEEPSEEK_API_KEY`，系统将使用本地算法进行分析。
-
-### 启动开发服务器
-
-```bash
-# 启动前端开发服务器
-npm run dev
-
-# 启动后端服务器（新终端）
+# 启动后端
 cd server && npm start
+
+# 新终端启动前端
+npm run dev
 ```
 
 访问 http://localhost:5173 即可使用。
-
-### 构建生产版本
-
-```bash
-npm run build
-```
-
-构建产物将输出到 `dist/` 目录。
 
 ## API 接口
 

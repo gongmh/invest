@@ -2,109 +2,97 @@
 
 ## 环境要求
 
-- Node.js >= 16.0
-- npm >= 8.0
-- PM2 (推荐用于生产环境)
+- Docker
+- Docker Compose（可选）
 
-## 快速开始
+## Docker 部署（推荐）
 
-### 开发环境
-
-```bash
-# 安装依赖
-npm install
-cd server && npm install && cd ..
-
-# 启动后端
-cd server && npm start
-
-# 新终端启动前端
-npm run dev
-```
-
-访问 http://localhost:5173
-
-### 生产环境部署
-
-#### 方式一：直接启动
+### 方式一：使用 Docker Compose（推荐）
 
 ```bash
-# 1. 构建前端
-npm run build
+# 1. 克隆项目
+git clone https://github.com/gongmh/invest.git
+cd invest
 
-# 2. 启动后端服务
-cd server && npm start
-```
-
-访问 http://localhost:3001
-
-#### 方式二：PM2部署（推荐）
-
-```bash
-# 1. 安装PM2
-npm install -g pm2
-
-# 2. 构建前端
-npm run build
-
-# 3. 创建PM2配置文件 ecosystem.config.js
-module.exports = {
-  apps: [{
-    name: 'invest-app',
-    cwd: './server',
-    script: 'index.js',
-    instances: 1,
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3001
-    }
-  }]
-}
-
-# 4. 启动服务
-pm2 start ecosystem.config.js
-
-# 5. 查看状态
-pm2 status
-
-# 6. 查看日志
-pm2 logs invest-app
-
-# 7. 停止服务
-pm2 stop invest-app
-
-# 8. 重启服务
-pm2 restart invest-app
-
-# 9. 开机自启
-pm2 startup
-pm2 save
-```
-
-## 环境变量配置
-
-在 `server/.env` 文件中配置：
-
-```env
-# 服务端口（默认3001）
-PORT=3001
-
-# DeepSeek API密钥（用于AI分析，可选）
-# 如不配置，系统将使用本地算法进行分析
+# 2. 创建环境变量文件（可选）
+cat > .env << EOF
 DEEPSEEK_API_KEY=your_api_key_here
+EOF
+
+# 3. 构建并启动
+docker-compose up -d
+
+# 4. 查看日志
+docker-compose logs -f
+
+# 5. 停止服务
+docker-compose down
 ```
+
+### 方式二：使用 Docker 命令
+
+```bash
+# 1. 构建镜像
+docker build -t invest-app .
+
+# 2. 运行容器
+docker run -d \
+  --name invest-app \
+  -p 3001:3001 \
+  -e DEEPSEEK_API_KEY=your_api_key_here \
+  -v $(pwd)/server/data:/app/server/data \
+  invest-app
+
+# 3. 查看日志
+docker logs -f invest-app
+
+# 4. 停止容器
+docker stop invest-app
+
+# 5. 删除容器
+docker rm invest-app
+```
+
+### 端口说明
+
+默认端口为 3001，如需修改：
+
+```bash
+# Docker Compose 方式：修改 docker-compose.yml 中的 ports
+ports:
+  - "8080:3001"  # 改为 8080 端口
+
+# Docker 命令方式：修改 -p 参数
+docker run -d -p 8080:3001 ...
+```
+
+## 环境变量
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| PORT | 服务端口 | 3001 |
+| DEEPSEEK_API_KEY | DeepSeek API 密钥 | 无 |
 
 ### 获取 DeepSeek API Key
 
 1. 访问 https://platform.deepseek.com/
 2. 注册并登录账号
 3. 在 API Keys 页面创建新的 API Key
-4. 将 API Key 填入 `.env` 文件
 
-## Nginx反向代理配置
+## 数据持久化
+
+自选股数据存储在 `server/data/favorites.json`，使用 Docker 卷挂载保证数据持久化：
+
+```bash
+# Docker Compose 已自动配置
+volumes:
+  - ./server/data:/app/server/data
+
+# Docker 命令方式
+-v $(pwd)/server/data:/app/server/data
+```
+
+## Nginx 反向代理配置
 
 ### 基础配置
 
@@ -154,75 +142,25 @@ server {
 }
 ```
 
-## Docker 部署（可选）
-
-### Dockerfile
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-# 复制前端依赖和源码
-COPY package*.json ./
-COPY src ./src
-COPY public ./public
-COPY index.html ./
-COPY vite.config.js ./
-
-# 安装前端依赖并构建
-RUN npm install && npm run build
-
-# 复制后端
-COPY server ./server
-
-# 安装后端依赖
-WORKDIR /app/server
-RUN npm install
-
-# 暴露端口
-EXPOSE 3001
-
-# 启动服务
-CMD ["node", "index.js"]
-```
-
-### 构建和运行
+## 常用命令
 
 ```bash
-# 构建镜像
-docker build -t invest-app .
+# 查看容器状态
+docker ps
 
-# 运行容器
-docker run -d -p 3001:3001 --name invest-app \
-  -e DEEPSEEK_API_KEY=your_api_key \
-  invest-app
-```
+# 查看日志
+docker logs -f invest-app
 
-## 目录结构
+# 进入容器
+docker exec -it invest-app sh
 
-```
-invest/
-├── dist/                  # 前端构建产物
-├── server/               # 后端服务
-│   ├── routes/          # API路由
-│   │   ├── analysis.js  # AI分析接口
-│   │   ├── favorites.js # 自选股接口
-│   │   └── stock.js     # 股票数据接口
-│   ├── services/        # 业务逻辑
-│   │   ├── aiAnalysisService.js  # AI分析服务
-│   │   └── favoritesService.js   # 自选股服务
-│   ├── data/            # 数据存储
-│   │   └── favorites.json
-│   ├── .env             # 环境变量
-│   └── index.js         # 入口文件
-├── src/                  # 前端源码
-│   ├── App.vue          # 主组件
-│   ├── main.js          # 入口
-│   ├── style.css        # 样式
-│   └── services/        # 前端服务
-├── package.json          # 前端依赖
-└── README.md             # 项目文档
+# 重启容器
+docker restart invest-app
+
+# 更新部署
+git pull
+docker-compose down
+docker-compose up -d --build
 ```
 
 ## 常见问题
@@ -231,35 +169,26 @@ invest/
 ```bash
 # 查找占用进程
 lsof -i:3001
-# 杀掉进程
-kill -9 <PID>
+# 或修改端口
+docker-compose.yml 中修改 ports 配置
 ```
 
-### 2. AI分析不生效
-检查 `server/.env` 文件中是否正确配置了 `DEEPSEEK_API_KEY`
+### 2. AI 分析不生效
+检查是否配置了 `DEEPSEEK_API_KEY` 环境变量
 
-### 3. 前端页面空白
-确保已执行 `npm run build` 构建前端
+### 3. 数据丢失
+确保使用了数据卷挂载：`-v ./server/data:/app/server/data`
 
-### 4. 自选股数据丢失
-检查 `server/data/favorites.json` 文件是否存在且有写入权限
-
-### 5. K线数据获取失败
-检查网络连接，确保能访问新浪财经API
-
-### 6. 跨域问题
-生产环境下后端已配置CORS，如仍有问题请检查Nginx配置
-
-## 性能优化建议
-
-1. **启用 Gzip 压缩** - 在 Nginx 中配置 gzip
-2. **静态资源缓存** - 配置浏览器缓存策略
-3. **CDN 加速** - 将静态资源部署到 CDN
-4. **负载均衡** - 高并发场景可使用 PM2 集群模式
+### 4. 构建失败
+```bash
+# 清理 Docker 缓存重新构建
+docker-compose build --no-cache
+docker-compose up -d
+```
 
 ## 安全建议
 
 1. 不要将 `.env` 文件提交到版本控制
-2. 定期更新依赖包
-3. 配置 HTTPS
-4. 限制 API 请求频率
+2. 配置 HTTPS
+3. 使用防火墙限制端口访问
+4. 定期更新 Docker 镜像
